@@ -62,18 +62,42 @@ const observer = new IntersectionObserver(function(entries) {
 // Apply animation to sections
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.section, .achievement-section').forEach(el => {
-        // Skip the analysis sections to avoid hiding them
-        if (!el.querySelector('h2') || !el.querySelector('h2').textContent.includes('تقرير التحليل الإعلامي')) {
+        if (el.classList.contains('no-animation')) {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+            return;
+        }
+
+        // Skip the main analysis report so it remains visible by default
+        const heading = el.querySelector('h2');
+        if (!heading || !heading.textContent.includes('تقرير التحليل الإعلامي')) {
             el.style.opacity = '0';
             el.style.transform = 'translateY(30px)';
             el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(el);
         } else {
-            // Make sure analysis sections are visible
             el.style.opacity = '1';
             el.style.transform = 'translateY(0)';
         }
     });
+
+    // Fallback للمتصفحات التي لا تدعم IntersectionObserver أو تعطل الأحداث
+    if (!('IntersectionObserver' in window)) {
+        document.querySelectorAll('.section, .achievement-section').forEach(el => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        });
+    } else {
+        // تأكد من أن أي عناصر لم تُفعّل بعد تصبح مرئية بعد تحميل الصفحة
+        setTimeout(() => {
+            document.querySelectorAll('.section, .achievement-section').forEach(el => {
+                if (getComputedStyle(el).opacity === '0') {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }
+            });
+        }, 1500);
+    }
 
     // Add smooth scrolling effect for dropdown headers
     document.querySelectorAll('.dropdown-header').forEach(header => {
